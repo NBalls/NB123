@@ -6,8 +6,8 @@
 </head>
 
 <?php
-include "simple_html_dom.php";
-include "bean.php";
+include "library/simple_html_dom.php";
+include "bean/main_bean.php";
 
 $mainUrl = "https://www.liaogou168.com/match/immediate.html";
 $asiaUrl = "https://www.liaogou168.com/match/odd/asia/";

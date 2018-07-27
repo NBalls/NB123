@@ -6,6 +6,7 @@
 </head>
 
 
+<!-- 解析昨日结果 -->
 
 <!-- 解析主数据 $mainArray -->
 <?php include "main_data.php";?>
