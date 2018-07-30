@@ -7,14 +7,18 @@ class MainBean {
 	public $status;
 	public $zhudui;
 	public $zhuduiUrl;
+	public $zhuPoint;
 	public $kedui;
 	public $keduiUrl;
+	public $kePoint;
 	public $analyseUrl;
 	public $bigUrl;
 	public $asiaUrl;
 	public $ouUrl;
 	public $asiaArray = array();
 	public $ouArray = array();
+	public $zhuResult = array();
+	public $keResult = array();
 }
 
 class AsiaBean {

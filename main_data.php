@@ -7,37 +7,20 @@
 
 <?php
 include "library/simple_html_dom.php";
+include "extra/main_extra.php";
 include "bean/main_bean.php";
 
 $mainUrl = "https://www.liaogou168.com/match/immediate.html";
 $asiaUrl = "https://www.liaogou168.com/match/odd/asia/";
 $ouUrl = "https://www.liaogou168.com/match/odd/ou/";
-
 $html1 = new simple_html_dom();
 $html1->load_file($mainUrl);
 $contentTable = $html1->find('table.contentTable', 0);
-
-
-// ###############################################
-$childs1 = $contentTable->children(13)->children;
-$childs = array();
-array_push($childs, $childs1[0]);
-array_push($childs, $childs1[1]);
-array_push($childs, $childs1[2]);
-// ###############################################
-
+$childs = $contentTable->children(13)->children;
 $mainArray = array();
 
 foreach ($childs as $e) {
-	// 联赛,时间,状态,主队,客队
 	$id = $e->children(0)->children(0)->value;
-	//echo $e->children(1)->children(0)->innertext;
-	//echo $e->children(2)->innertext;
-	//echo $e->children(3)->innertext;
-	//echo $e->children(4)->children(0)->plaintext;
-	//echo $e->children(6)->children(0)->plaintext;
-	//echo "</br>";
-	
 	$mainBean = new MainBean();
 	$mainBean->id = $e->children(0)->children(0)->value;
 	$mainBean->liansai = $e->children(1)->children(0)->innertext;
@@ -45,6 +28,7 @@ foreach ($childs as $e) {
 	$mainBean->status = $e->children(3)->innertext;
 	$mainBean->zhuduiUrl = "https://www.liaogou168.com".$e->children(4)->children(0)->href;
 	$mainBean->zhudui = $e->children(4)->children(0)->plaintext;
+	$mainBean->zhuPoint = $e->children(5)->children(0)->children(0)->innertext;
 	$mainBean->keduiUrl = "https://www.liaogou168.com".$e->children(6)->children(0)->href;
 	$mainBean->kedui = $e->children(6)->children(0)->plaintext;
 	$mainBean->analyseUrl = "https://www.liaogou168.com".$e->children(10)->children(0)->href;
@@ -58,38 +42,23 @@ foreach ($childs as $e) {
 	$asiaTr = $asiaDiv->children(0)->children(1)->children;
 	$mainBean->asiaArray = array();
 	foreach ($asiaTr as $f) {
-		//echo $f->children(0)->innertext;
-		//echo $f->children(1)->innertext;
-		//echo $f->children(2)->innertext;
-		//echo $f->children(3)->innertext;
-		//echo $f->children(4)->innertext;
-		//echo $f->children(5)->innertext;
-		//echo "</br>";
 		$asiaBean = new AsiaBean();
 		$asiaBean->company = $f->children(0)->innertext;
 		$asiaBean->startZRate = $f->children(1)->innertext;
-		$asiaBean->startPan = $f->children(2)->innertext;
 		$asiaBean->startKRate = $f->children(3)->innertext;
 		$asiaBean->endZRate = $f->children(4)->innertext;
-		$asiaBean->endPan = $f->children(5)->innertext;
 		$asiaBean->endKRate = $f->children(6)->innertext;
+		$asiaBean->startPan = changePan($f->children(2)->innertext);
+		$asiaBean->endPan = changePan($f->children(5)->innertext);
 		array_push($mainBean->asiaArray, $asiaBean);
 	}
 
-	//echo "</br></br>";
 	$html3 = new simple_html_dom();
 	$html3->load_file($ouUrl.$id);
 	$ouDiv = $html3->find('div#Odd', 0);
 	$ouTr = $ouDiv->children(0)->children(1)->children;
 	$mainBean->ouArray = array();
 	foreach ($ouTr as $f) {
-		//echo $f->children(0)->innertext;
-		//echo $f->children(1)->innertext;
-		//echo $f->children(2)->innertext;
-		//echo $f->children(3)->innertext;
-		//echo $f->children(4)->innertext;
-		//echo $f->children(5)->innertext;
-		//echo "</br>";
 		$ouBean = new OuBean();
 		$ouBean->company = $f->children(0)->innertext;
 		$ouBean->startS = $f->children(1)->innertext;
@@ -99,8 +68,35 @@ foreach ($childs as $e) {
 		$ouBean->endP = $f->children(5)->innertext;
 		$ouBean->endF = $f->children(6)->innertext;
 		array_push($mainBean->ouArray, $ouBean);
-
 	}
+
+
+	/*$html4 = new simple_html_dom();
+	$html4->load_file($mainBean->analyseUrl);
+	$historyDiv = $html4->find('div#Data_History', 0);
+	if ($historyDiv != null 
+		&& $historyDiv->children(1) != null
+		&& $historyDiv->children(1)->children(1) != null
+		&& $historyDiv->children(1)->children(1)->children(2) != null
+		&& $historyDiv->children(1)->children(1)->children(2)->children(1) != null
+		&& $historyDiv->children(2) != null
+		&& $historyDiv->children(2)->children(1) != null 
+		&& $historyDiv->children(2)->children(1)->children(2) != null
+		&& $historyDiv->children(2)->children(1)->children(2)->children(1) != null) {
+
+		// sleep(5);
+		$zhuBody = $historyDiv->children(1)->children(1)->children(2)->children(1);
+		$zhuTr = $zhuBody->children;
+		foreach ($zhuTr as $e) {
+			// array_push($mainBean->zhuResult, $e->children(23)->innertext);
+		}
+		$keBody = $historyDiv->children(2)->children(1)->children(2)->children(1);
+		$keTr = $keBody->children;
+		foreach ($keTr as $e) {
+			//array_push($mainBean->keResult, $e->children(23)->innertext);
+		}
+	}*/
+	
 	array_push($mainArray, $mainBean);
 }
 
@@ -128,114 +124,81 @@ echo "&nbsp&nbsp完场比赛：".$completeCount;
 echo "场 &nbsp进行中比赛：".$playingCount;
 echo "场 &nbsp尚未开始比赛：".$nostartCount."场</div><br><br>";
 
-$num = 0;
+
+// ###################### 1.44比赛 ####################################
+echo "<font color='#ff0000' size='6'>".'1.44比赛</br>'."</font>";
+$num1 = 0;
 foreach ($mainArray as $e) {
-	echo "<table border='0' cellpadding='5' cellspacing='0'>
-			<tr bgcolor='#66aa66' bgcolor='0'>
-			<td align='center' width='60'>";
 
-	$num = $num + 1;
-	if ($num < 10) {
-		echo "00".$num;
-	} else if ($num < 100) {
-		echo "0".$num;
-	} else {
-		echo $num;
-	}
-	echo "</td><td align='center' width='60'>";
-	echo $e->status;
-	echo "</td><td align='center' width='60'>";
-	echo $e->liansai;
-	echo "</td><td align='center' width='60'>";
-	echo $e->time;
-	echo "</td><td align='center' width='60'>";
-	echo "<a href=".$e->zhuduiUrl.">".$e->zhudui."</a>";
-	echo "</td><td align='center' width='60'>";
-	echo "<a href=".$e->keduiUrl.">".$e->kedui."</a>";
-	echo "</td><td align='center' width='60'>";
-	echo "<a href=".$e->analyseUrl.">析</a>";
-	echo "</td><td align='center' width='60'>";
-	echo "<a href=".$e->bigUrl.">大</a>";
-	echo "</td><td align='center' width='60'>";
-	echo "<a href=".$e->ouUrl.">欧</a>";
-	echo "</td><td align='center' width='60'>";
-	echo "<a href=".$e->asiaUrl.">亚</a>";
-	echo "</td><td></td><td></td><td></td><td></td></tr>";
+	$isPrint = false;
+	if (count($e->ouArray) >= 2) {
+		foreach ($e->ouArray as $f) {
+			if (strcmp($f->startS, '1.44') == 0 
+				|| strcmp($f->startF, '1.44') == 0
+				|| strcmp($f->endS, '1.44') == 0
+				|| strcmp($f->endF, '1.44') == 0) {
+				$isPrint = true;
+			} 
+		}
 
-	if (count($e->asiaArray) == count($e->ouArray)) {
-		for ($x = 0; $x < count($e->asiaArray); $x++) {
-			echo "<tr bgcolor='#EEEEEE'><td align='center' width='100'>";
-			echo $e->asiaArray[$x]->company;
-			echo "</td><td align='center' width='60'>";
-			echo $e->asiaArray[$x]->startZRate;
-			echo "</td><td align='center' width='100'>";
-			echo $e->asiaArray[$x]->startPan;
-			echo "</td><td align='center' width='60'>";
-			echo $e->asiaArray[$x]->startKRate;
-			echo "</td><td align='center' width='60'>";
-
-			if (strcmp($e->asiaArray[$x]->endZRate, $e->asiaArray[$x]->startZRate) > 0) {
-				echo "<font color='#ff0000'>".$e->asiaArray[$x]->endZRate."</font>";
-			} else if (strcmp($e->asiaArray[$x]->endZRate, $e->asiaArray[$x]->startZRate) < 0){
-				echo "<font color='#00ff00'>".$e->asiaArray[$x]->endZRate."</font>";
-			} else {
-				echo "<font color='#000000'>".$e->asiaArray[$x]->endZRate."</font>";
-			}
-			echo "</td><td align='center' width='100'>";
-			echo $e->asiaArray[$x]->endPan;
-			echo "</td><td align='center' width='60'>";
-
-			if (strcmp($e->asiaArray[$x]->endKRate, $e->asiaArray[$x]->startKRate) > 0) {
-				echo "<font color='#ff0000'>".$e->asiaArray[$x]->endKRate."</font>";
-			} else if (strcmp($e->asiaArray[$x]->endKRate, $e->asiaArray[$x]->startKRate) < 0){
-				echo "<font color='#00ff00'>".$e->asiaArray[$x]->endKRate."</font>";
-			} else {
-				echo "<font color='#000000'>".$e->asiaArray[$x]->endKRate."</font>";
-			}
-			echo "</td>";
-
-			echo "<td align='center' width='60'>";
-			echo $e->ouArray[$x]->company;
-			echo "</td><td align='center' width='60'>";
-			echo $e->ouArray[$x]->startS;
-			echo "</td><td align='center' width='60'>";
-			echo $e->ouArray[$x]->startP;
-			echo "</td><td align='center' width='60'>";
-			echo $e->ouArray[$x]->startF;
-			echo "</td><td align='center' width='60'>";
-
-			if (strcmp($e->ouArray[$x]->endS, $e->ouArray[$x]->startS) > 0) {
-				echo "<font color='#ff0000'>".$e->ouArray[$x]->endS."</font>";
-			} else if (strcmp($e->ouArray[$x]->endS, $e->ouArray[$x]->startS) < 0) {
-				echo "<font color='#00ff00'>".$e->ouArray[$x]->endS."</font>";
-			} else {
-				echo "<font color='#FF0000'>".$e->ouArray[$x]->endS."</font>";
-			}
-			echo "</td><td align='center' width='60'>";
-
-			if (strcmp($e->ouArray[$x]->endP, $e->ouArray[$x]->startP) > 0) {
-				echo "<font color='#ff0000'>".$e->ouArray[$x]->endP."</font>";
-			} else if (strcmp($e->ouArray[$x]->endP, $e->ouArray[$x]->startP) < 0) {
-				echo "<font color='#00ff00'>".$e->ouArray[$x]->endP."</font>";
-			} else {
-				echo "<font color='#000000'>".$e->ouArray[$x]->endP."</font>";
-			}
-			echo "</td><td align='center' width='60'>";
-
-			if (strcmp($e->ouArray[$x]->endF, $e->ouArray[$x]->startF) > 0) {
-				echo "<font color='#ff0000'>".$e->ouArray[$x]->endF."</font>";
-			} else if (strcmp($e->ouArray[$x]->endF, $e->ouArray[$x]->startF) < 0) {
-				echo "<font color='#00ff00'>".$e->ouArray[$x]->endF."</font>";
-			} else {
-				echo "<font color='#000000'>".$e->ouArray[$x]->endF."</font>";
-			}
-			echo "</td></tr>";
+		if ($isPrint) {
+			$num1 = $num1 + 1;
+			echoTable($e, $num1);
 		}
 	}
-	
-	echo "</table>";
 }
+echo "</br></br></br>";
+// ###################### 1.44比赛 ####################################
 
+// ###################### 连续变化两个盘口比赛 ###########################
+echo "<font color='#ff0000' size='6'>".'变盘2个盘口以上比赛<br>'."</font>";
+$num2 = 0;
+foreach ($mainArray as $e) {
 
+	$isPrint = 0;
+	foreach ($e->asiaArray as $f) {
+		if ($f->endPan - $f->startPan >= 0.5 ||
+				$f->endPan - $f->startPan <= -0.5) {
+			$isPrint = $isPrint + 1;
+		} 
+	}
+
+	if ($isPrint >= 2) {
+		$num2 = $num2 + 1;
+		echoTable($e, $num2);
+	}
+}
+echo "</br></br></br>";
+// ###################### 连续变化两个盘口比赛 ###########################
+
+// ###################### 下盘看近期比赛 ################################
+echo "<font color='#ff0000' size='6'>".'下盘比赛<br>'."</font>";
+$num3 = 0;
+foreach ($mainArray as $e) {
+
+	$isPrint = false;
+	if (count($f->zhuResult) > 0 && count($f->keResult) > 0) {
+		if ($f->endPan >= 0.25 && strcmp($f->zhuResult->children(0), '赢') == 0 && strcmp($f->keResult->children(0), '输') == 0) {
+			$isPrint = true;
+		} else if ($f->endPan <= -0.25 && strcmp($f->zhuResult->children(0), '输') == 0 && strcmp($f->keResult->children(0), '赢') == 0) {
+			$isPrint = true;
+		}
+	}
+
+	if ($isPrint) {
+		$num2 = $num3 + 1;
+		echoTable($e, $num3);
+	}
+}
+echo "</br></br></br>";
+// ###################### 下盘看近期比赛 ################################
+
+$num8 = 0;
+foreach ($mainArray as $e) {
+	$num8 = $num8 + 1;
+	if (count($e->ouArray) >= 2) {
+		echoTable($e, $num8);
+	}
+}
 
 ?>

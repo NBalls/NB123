@@ -6,7 +6,7 @@
 </head>
 
 <!-- 解析昨日结果 -->
-<!--<?php include "result_data.php";?>-->
+<?php //include "result_data.php";?>
 
 <!-- 解析主数据 $mainArray -->
 <?php include "main_data.php";?>
